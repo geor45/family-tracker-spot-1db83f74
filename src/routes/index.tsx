@@ -186,17 +186,15 @@ function HomePage() {
                     })}
                   </div>
                 </div>
-                {m.user_id !== user.id && (
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    className="shrink-0 gap-1"
-                    onClick={() => void sendWake(m.user_id, m.display_name)}
-                  >
-                    <Bell className="h-4 w-4" />
-                    Ξύπνα βλάκα
-                  </Button>
-                )}
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="shrink-0 gap-1"
+                  onClick={() => void sendWake(m.user_id, m.display_name)}
+                >
+                  <Bell className="h-4 w-4" />
+                  Ξύπνα βλάκα
+                </Button>
               </div>
             ))}
           </div>
