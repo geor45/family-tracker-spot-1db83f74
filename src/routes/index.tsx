@@ -5,9 +5,11 @@ import { useAuth } from "@/lib/auth-context";
 import { LocationTracker } from "@/components/LocationTracker";
 import { FamilyMap, type MemberLocation } from "@/components/FamilyMap";
 import { Button } from "@/components/ui/button";
-import { LogOut, History, Users } from "lucide-react";
+import { LogOut, History, Users, Bell } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { el } from "date-fns/locale";
+import { playWakeSound, primeWakeSound } from "@/lib/wake-sound";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/")({
   head: () => ({
