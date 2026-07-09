@@ -47,10 +47,15 @@ export function FamilyMap({ members }: { members: MemberLocation[] }) {
       zoom: 12,
       zoomControl: true,
     });
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "© OpenStreetMap",
-      maxZoom: 19,
-    }).addTo(map);
+    L.tileLayer(
+      "https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png",
+      {
+        attribution: "© OpenStreetMap © CARTO",
+        subdomains: "abcd",
+        maxZoom: 20,
+        detectRetina: true,
+      },
+    ).addTo(map);
     layerRef.current = L.layerGroup().addTo(map);
     mapRef.current = map;
 
