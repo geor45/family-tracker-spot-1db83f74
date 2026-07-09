@@ -71,6 +71,54 @@ function HomePage() {
     };
   }, [user]);
 
+  // Listen for incoming wake signals addressed to me → play sound
+  useEffect(() => {
+    if (!user) return;
+    const ch = supabase
+      .channel(`wake_signals_${user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "wake_signals",
+          filter: `recipient_id=eq.${user.id}`,
+        },
+        async (payload) => {
+          const row = payload.new as { sender_id: string; message: string };
+          const { data: p } = await supabase
+            .from("profiles")
+            .select("display_name")
+            .eq("id", row.sender_id)
+            .maybeSingle();
+          void playWakeSound(4);
+          toast(`🔔 ${p?.display_name ?? "Κάποιος"} σε ψάχνει!`, {
+            description: row.message,
+            duration: 8000,
+          });
+        },
+      )
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(ch);
+    };
+  }, [user]);
+
+  const sendWake = async (recipientId: string, name: string) => {
+    if (!user) return;
+    primeWakeSound();
+    const { error } = await supabase.from("wake_signals").insert({
+      sender_id: user.id,
+      recipient_id: recipientId,
+      message: "Ξύπνα βλάκα!",
+    });
+    if (error) {
+      toast.error("Αποτυχία αποστολής");
+    } else {
+      toast.success(`Στάλθηκε ξύπνημα στον/στην ${name} 📣`);
+    }
+  };
+
   if (loading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center text-muted-foreground text-sm">
