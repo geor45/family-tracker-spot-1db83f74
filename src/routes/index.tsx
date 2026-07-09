@@ -5,9 +5,11 @@ import { useAuth } from "@/lib/auth-context";
 import { LocationTracker } from "@/components/LocationTracker";
 import { FamilyMap, type MemberLocation } from "@/components/FamilyMap";
 import { Button } from "@/components/ui/button";
-import { LogOut, History, Users } from "lucide-react";
+import { LogOut, History, Users, Bell } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { el } from "date-fns/locale";
+import { playWakeSound, primeWakeSound } from "@/lib/wake-sound";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -68,6 +70,54 @@ function HomePage() {
       void supabase.removeChannel(ch);
     };
   }, [user]);
+
+  // Listen for incoming wake signals addressed to me → play sound
+  useEffect(() => {
+    if (!user) return;
+    const ch = supabase
+      .channel(`wake_signals_${user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "wake_signals",
+          filter: `recipient_id=eq.${user.id}`,
+        },
+        async (payload) => {
+          const row = payload.new as { sender_id: string; message: string };
+          const { data: p } = await supabase
+            .from("profiles")
+            .select("display_name")
+            .eq("id", row.sender_id)
+            .maybeSingle();
+          void playWakeSound(4);
+          toast(`🔔 ${p?.display_name ?? "Κάποιος"} σε ψάχνει!`, {
+            description: row.message,
+            duration: 8000,
+          });
+        },
+      )
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(ch);
+    };
+  }, [user]);
+
+  const sendWake = async (recipientId: string, name: string) => {
+    if (!user) return;
+    primeWakeSound();
+    const { error } = await supabase.from("wake_signals").insert({
+      sender_id: user.id,
+      recipient_id: recipientId,
+      message: "Ξύπνα βλάκα!",
+    });
+    if (error) {
+      toast.error("Αποτυχία αποστολής");
+    } else {
+      toast.success(`Στάλθηκε ξύπνημα στον/στην ${name} 📣`);
+    }
+  };
 
   if (loading || !user) {
     return (
@@ -136,6 +186,17 @@ function HomePage() {
                     })}
                   </div>
                 </div>
+                {m.user_id !== user.id && (
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="shrink-0 gap-1"
+                    onClick={() => void sendWake(m.user_id, m.display_name)}
+                  >
+                    <Bell className="h-4 w-4" />
+                    Ξύπνα βλάκα
+                  </Button>
+                )}
               </div>
             ))}
           </div>
