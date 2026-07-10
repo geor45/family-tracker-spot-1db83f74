@@ -54,10 +54,15 @@ export function FamilyMap({ members, onWakeMember }: FamilyMapProps) {
   const mapRef = useRef<L.Map | null>(null);
   const layerRef = useRef<L.LayerGroup | null>(null);
   const wakeHandlerRef = useRef(onWakeMember);
+  const membersRef = useRef(members);
 
   useEffect(() => {
     wakeHandlerRef.current = onWakeMember;
   }, [onWakeMember]);
+
+  useEffect(() => {
+    membersRef.current = members;
+  }, [members]);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -81,7 +86,7 @@ export function FamilyMap({ members, onWakeMember }: FamilyMapProps) {
         "[data-wake-user-id]",
       );
       if (!button) return;
-      const member = members.find((m) => m.user_id === button.dataset.wakeUserId);
+      const member = membersRef.current.find((m) => m.user_id === button.dataset.wakeUserId);
       if (member) wakeHandlerRef.current?.(member);
     };
     containerRef.current.addEventListener("click", handlePopupClick);

@@ -64,7 +64,7 @@ function AuthPage() {
         <img
           src={familyPhoto.url}
           alt="Οικογενειακή φωτογραφία"
-          className="h-64 w-full rounded-2xl border object-cover object-center shadow-lg"
+          className="aspect-[4/3] w-full rounded-2xl border object-cover object-center shadow-lg"
         />
         <div className="text-center space-y-2">
           <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg">

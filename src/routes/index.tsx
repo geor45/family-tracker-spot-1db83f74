@@ -196,7 +196,7 @@ function HomePage() {
           onWakeMember={(member) => void sendWake(member.user_id, member.display_name)}
         />
         {showList && (
-          <div className="absolute top-3 left-3 right-3 bg-card/95 backdrop-blur border rounded-xl shadow-lg max-h-[60vh] overflow-y-auto">
+          <div className="absolute top-3 left-3 right-3 z-[1000] bg-card/95 backdrop-blur border rounded-xl shadow-lg max-h-[60vh] overflow-y-auto">
             {members.length === 0 && (
               <div className="p-4 text-sm text-muted-foreground text-center">
                 Κανείς δεν μοιράζεται τοποθεσία ακόμα.
