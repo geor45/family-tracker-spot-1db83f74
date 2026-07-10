@@ -1,0 +1,1 @@
+ALTER TABLE public.wake_signals REPLICA IDENTITY FULL;
