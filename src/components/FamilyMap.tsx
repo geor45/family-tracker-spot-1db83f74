@@ -14,6 +14,20 @@ export type MemberLocation = {
   updated_at: string;
 };
 
+type FamilyMapProps = {
+  members: MemberLocation[];
+  onWakeMember?: (member: MemberLocation) => void;
+};
+
+function escapeHtml(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
 function makeIcon(color: string, initials: string) {
   const html = `<div style="
     background:${color};
@@ -35,27 +49,45 @@ function makeIcon(color: string, initials: string) {
   });
 }
 
-export function FamilyMap({ members }: { members: MemberLocation[] }) {
+export function FamilyMap({ members, onWakeMember }: FamilyMapProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const layerRef = useRef<L.LayerGroup | null>(null);
+  const wakeHandlerRef = useRef(onWakeMember);
+
+  useEffect(() => {
+    wakeHandlerRef.current = onWakeMember;
+  }, [onWakeMember]);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     const map = L.map(containerRef.current, {
       center: [37.9838, 23.7275], // default Athens; will re-fit when data arrives
       zoom: 12,
+      maxZoom: 22,
       zoomControl: true,
     });
     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "© OpenStreetMap contributors",
-      maxZoom: 19,
+      maxNativeZoom: 19,
+      maxZoom: 22,
       detectRetina: true,
     }).addTo(map);
     layerRef.current = L.layerGroup().addTo(map);
     mapRef.current = map;
 
+    const handlePopupClick = (event: MouseEvent) => {
+      const button = (event.target as HTMLElement | null)?.closest<HTMLButtonElement>(
+        "[data-wake-user-id]",
+      );
+      if (!button) return;
+      const member = members.find((m) => m.user_id === button.dataset.wakeUserId);
+      if (member) wakeHandlerRef.current?.(member);
+    };
+    containerRef.current.addEventListener("click", handlePopupClick);
+
     return () => {
+      containerRef.current?.removeEventListener("click", handlePopupClick);
       map.remove();
       mapRef.current = null;
       layerRef.current = null;
@@ -88,12 +120,17 @@ export function FamilyMap({ members }: { members: MemberLocation[] }) {
         icon: makeIcon(m.color, initials || "?"),
       }).bindPopup(
         `<div style="font-family:system-ui;font-size:13px">
-          <strong>${m.display_name}</strong><br/>
+          <strong>${escapeHtml(m.display_name)}</strong><br/>
           <span style="color:#666">${formatDistanceToNow(new Date(m.updated_at), {
             addSuffix: true,
             locale: el,
           })}</span>
           ${m.accuracy ? `<br/><span style="color:#999">±${Math.round(m.accuracy)}m</span>` : ""}
+          <button type="button" data-wake-user-id="${escapeHtml(m.user_id)}" style="
+            display:flex;align-items:center;justify-content:center;gap:6px;
+            width:100%;margin-top:10px;padding:8px 10px;border:0;border-radius:8px;
+            background:#111827;color:white;font-weight:700;font-size:12px;font-family:system-ui;
+          ">🔔 Ξύπνα βλάκα</button>
         </div>`,
       );
       marker.addTo(layer);
@@ -105,7 +142,7 @@ export function FamilyMap({ members }: { members: MemberLocation[] }) {
       map.fitBounds(bounds.pad(0.2));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]);
+  }, [key, members]);
 
   return <div ref={containerRef} className="h-full w-full" />;
 }
