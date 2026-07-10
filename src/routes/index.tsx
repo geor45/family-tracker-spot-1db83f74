@@ -177,10 +177,12 @@ function HomePage() {
                 <div className="min-w-0 flex-1">
                   <div className="font-medium text-sm truncate">{m.display_name}</div>
                   <div className="text-xs text-muted-foreground">
-                    {formatDistanceToNow(new Date(m.updated_at), {
-                      addSuffix: true,
-                      locale: el,
-                    })}
+                    {m.updated_at
+                      ? formatDistanceToNow(new Date(m.updated_at), {
+                          addSuffix: true,
+                          locale: el,
+                        })
+                      : "Χωρίς τοποθεσία ακόμα"}
                   </div>
                 </div>
                 <Button
