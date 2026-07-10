@@ -37,22 +37,19 @@ function HomePage() {
     const load = async () => {
       const { data: locs } = await supabase.from("latest_locations").select("*");
       const { data: profs } = await supabase.from("profiles").select("*");
-      if (!locs || !profs) return;
-      const merged: MemberLocation[] = locs
-        .map((l) => {
-          const p = profs.find((pr) => pr.id === l.user_id);
-          if (!p) return null;
-          return {
-            user_id: l.user_id,
-            display_name: p.display_name,
-            color: p.color,
-            latitude: l.latitude,
-            longitude: l.longitude,
-            accuracy: l.accuracy,
-            updated_at: l.updated_at,
-          } satisfies MemberLocation;
-        })
-        .filter((x): x is MemberLocation => x !== null);
+      if (!profs) return;
+      const merged: MemberLocation[] = profs.map((p) => {
+        const l = locs?.find((lo) => lo.user_id === p.id);
+        return {
+          user_id: p.id,
+          display_name: p.display_name,
+          color: p.color,
+          latitude: l?.latitude ?? 0,
+          longitude: l?.longitude ?? 0,
+          accuracy: l?.accuracy ?? null,
+          updated_at: l?.updated_at ?? "",
+        } satisfies MemberLocation;
+      });
       setMembers(merged);
     };
     void load();
