@@ -6,8 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { MapPin } from "lucide-react";
-import familyPhoto from "@/assets/KERMEGPS.png.asset.json";
+import familyPhoto from "@/assets/KERMEGPS.png";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -60,24 +59,14 @@ function AuthPage() {
 
   return (
     <div className="min-h-dvh overflow-y-auto bg-gradient-to-br from-background to-muted px-4 py-6">
-<<<<<<< HEAD
       <div className="mx-auto w-full max-w-md space-y-3">
         <img
-          src={familyPhoto.url}
+          src={familyPhoto}
           alt="Οικογενειακή φωτογραφία"
-          className="aspect-[4/3] w-full rounded-2xl border object-cover object-center shadow-lg min-h-[320px]"
-=======
-      <div className="mx-auto w-full max-w-md space-y-5">
-        <img
-          src={familyPhoto.url}
-          alt="Οικογενειακή φωτογραφία"
-          className="aspect-[4/3] w-full rounded-2xl border object-cover object-center shadow-lg"
->>>>>>> 7c4d831e2ba352fc2827f96a2936ce6c176b9c67
+          className="aspect-[4/3] w-full min-h-[360px] rounded-2xl border object-cover object-center shadow-lg"
         />
+
         <div className="text-center space-y-2">
-          <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg">
-            <MapPin className="h-7 w-7" />
-          </div>
           <h1 className="text-2xl font-bold">Family GPS</h1>
           <p className="text-sm text-muted-foreground">
             {mode === "signin" ? "Σύνδεση στην οικογένεια" : "Δημιουργία λογαριασμού"}
@@ -97,6 +86,7 @@ function AuthPage() {
               />
             </div>
           )}
+
           <div className="space-y-1.5">
             <Label htmlFor="email">Email</Label>
             <Input
@@ -108,6 +98,7 @@ function AuthPage() {
               autoComplete="email"
             />
           </div>
+
           <div className="space-y-1.5">
             <Label htmlFor="password">Κωδικός</Label>
             <Input
@@ -120,6 +111,7 @@ function AuthPage() {
               autoComplete={mode === "signin" ? "current-password" : "new-password"}
             />
           </div>
+
           <Button type="submit" className="w-full" disabled={busy}>
             {busy ? "..." : mode === "signin" ? "Σύνδεση" : "Εγγραφή"}
           </Button>
