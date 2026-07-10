@@ -155,7 +155,7 @@ function HomePage() {
       <LocationTracker />
 
       <div className="flex-1 relative">
-        <FamilyMap members={members} />
+        <FamilyMap members={members.filter((m) => m.updated_at !== "")} />
         {showList && (
           <div className="absolute top-3 left-3 right-3 bg-card/95 backdrop-blur border rounded-xl shadow-lg max-h-[60vh] overflow-y-auto">
             {members.length === 0 && (
