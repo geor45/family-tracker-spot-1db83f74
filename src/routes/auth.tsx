@@ -60,11 +60,19 @@ function AuthPage() {
 
   return (
     <div className="min-h-dvh overflow-y-auto bg-gradient-to-br from-background to-muted px-4 py-6">
+<<<<<<< HEAD
       <div className="mx-auto w-full max-w-md space-y-3">
         <img
           src={familyPhoto.url}
           alt="Οικογενειακή φωτογραφία"
           className="aspect-[4/3] w-full rounded-2xl border object-cover object-center shadow-lg min-h-[320px]"
+=======
+      <div className="mx-auto w-full max-w-md space-y-5">
+        <img
+          src={familyPhoto.url}
+          alt="Οικογενειακή φωτογραφία"
+          className="aspect-[4/3] w-full rounded-2xl border object-cover object-center shadow-lg"
+>>>>>>> 7c4d831e2ba352fc2827f96a2936ce6c176b9c67
         />
         <div className="text-center space-y-2">
           <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg">
