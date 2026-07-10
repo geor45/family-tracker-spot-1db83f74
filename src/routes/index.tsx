@@ -34,9 +34,24 @@ function HomePage() {
   }, [user, loading, nav]);
 
   useEffect(() => {
+    const enableSound = () => primeWakeSound();
+    window.addEventListener("pointerdown", enableSound, { once: true });
+    window.addEventListener("keydown", enableSound, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", enableSound);
+      window.removeEventListener("keydown", enableSound);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!user) return;
 
     const load = async () => {
+      await supabase.from("profiles").upsert({
+        id: user.id,
+        display_name:
+          user.user_metadata?.display_name ?? user.email?.split("@")[0] ?? "Μέλος",
+      });
       const { data: locs } = await supabase.from("latest_locations").select("*");
       const { data: profs } = await supabase.from("profiles").select("*");
       if (!profs) return;
