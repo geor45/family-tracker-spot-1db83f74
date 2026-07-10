@@ -73,10 +73,15 @@ function HistoryPage() {
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
-    const map = L.map(containerRef.current, { center: [37.9838, 23.7275], zoom: 12 });
+    const map = L.map(containerRef.current, {
+      center: [37.9838, 23.7275],
+      zoom: 12,
+      maxZoom: 22,
+    });
     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "© OpenStreetMap contributors",
-      maxZoom: 19,
+      maxNativeZoom: 19,
+      maxZoom: 22,
       detectRetina: true,
     }).addTo(map);
     layerRef.current = L.layerGroup().addTo(map);

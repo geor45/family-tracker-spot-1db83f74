@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
@@ -26,15 +26,32 @@ function HomePage() {
   const { user, loading } = useAuth();
   const [members, setMembers] = useState<MemberLocation[]>([]);
   const [showList, setShowList] = useState(false);
+  const processedWakeIdsRef = useRef<Set<string>>(new Set());
+  const listenFromRef = useRef(new Date().toISOString());
 
   useEffect(() => {
     if (!loading && !user) nav({ to: "/auth" });
   }, [user, loading, nav]);
 
   useEffect(() => {
+    const enableSound = () => primeWakeSound();
+    window.addEventListener("pointerdown", enableSound, { once: true });
+    window.addEventListener("keydown", enableSound, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", enableSound);
+      window.removeEventListener("keydown", enableSound);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!user) return;
 
     const load = async () => {
+      await supabase.from("profiles").upsert({
+        id: user.id,
+        display_name:
+          user.user_metadata?.display_name ?? user.email?.split("@")[0] ?? "Μέλος",
+      });
       const { data: locs } = await supabase.from("latest_locations").select("*");
       const { data: profs } = await supabase.from("profiles").select("*");
       if (!profs) return;
@@ -68,9 +85,35 @@ function HomePage() {
     };
   }, [user]);
 
-  // Listen for incoming wake signals addressed to me → play sound
+  const handleIncomingWake = useCallback(
+    async (row: { id?: string; sender_id: string; message: string; created_at?: string }) => {
+      if (row.id && processedWakeIdsRef.current.has(row.id)) return;
+      if (row.id) processedWakeIdsRef.current.add(row.id);
+      if (row.created_at && row.created_at > listenFromRef.current) {
+        listenFromRef.current = row.created_at;
+      }
+
+      const { data: p } = await supabase
+        .from("profiles")
+        .select("display_name")
+        .eq("id", row.sender_id)
+        .maybeSingle();
+      await playWakeSound(6);
+      toast(`🔔 ${p?.display_name ?? "Κάποιος"} σε ψάχνει!`, {
+        description: row.message,
+        duration: 9000,
+      });
+    },
+    [],
+  );
+
+  // Listen for incoming wake signals addressed to me → play sound.
+  // Realtime handles instant delivery; polling is a fallback for mobile/webview stalls.
   useEffect(() => {
     if (!user) return;
+    listenFromRef.current = new Date().toISOString();
+    processedWakeIdsRef.current.clear();
+
     const ch = supabase
       .channel(`wake_signals_${user.id}`)
       .on(
@@ -81,40 +124,48 @@ function HomePage() {
           table: "wake_signals",
           filter: `recipient_id=eq.${user.id}`,
         },
-        async (payload) => {
-          const row = payload.new as { sender_id: string; message: string };
-          const { data: p } = await supabase
-            .from("profiles")
-            .select("display_name")
-            .eq("id", row.sender_id)
-            .maybeSingle();
-          void playWakeSound(4);
-          toast(`🔔 ${p?.display_name ?? "Κάποιος"} σε ψάχνει!`, {
-            description: row.message,
-            duration: 8000,
-          });
-        },
+        (payload) => void handleIncomingWake(payload.new as Parameters<typeof handleIncomingWake>[0]),
       )
       .subscribe();
+
+    const poll = window.setInterval(() => {
+      void supabase
+        .from("wake_signals")
+        .select("id, sender_id, message, created_at")
+        .eq("recipient_id", user.id)
+        .gt("created_at", listenFromRef.current)
+        .order("created_at", { ascending: true })
+        .limit(10)
+        .then(({ data }) => {
+          for (const row of data ?? []) void handleIncomingWake(row);
+        });
+    }, 7000);
+
     return () => {
+      window.clearInterval(poll);
       void supabase.removeChannel(ch);
     };
-  }, [user]);
+  }, [handleIncomingWake, user]);
 
-  const sendWake = async (recipientId: string, name: string) => {
+  const sendWake = useCallback(async (recipientId: string, name: string) => {
     if (!user) return;
     primeWakeSound();
-    const { error } = await supabase.from("wake_signals").insert({
-      sender_id: user.id,
-      recipient_id: recipientId,
-      message: "Ξύπνα βλάκα!",
-    });
+    const { data, error } = await supabase
+      .from("wake_signals")
+      .insert({
+        sender_id: user.id,
+        recipient_id: recipientId,
+        message: "Ξύπνα βλάκα!",
+      })
+      .select("id, sender_id, message, created_at")
+      .single();
     if (error) {
-      toast.error("Αποτυχία αποστολής");
+      toast.error(`Αποτυχία αποστολής: ${error.message}`);
     } else {
       toast.success(`Στάλθηκε ξύπνημα στον/στην ${name} 📣`);
+      if (recipientId === user.id && data) void handleIncomingWake(data);
     }
-  };
+  }, [handleIncomingWake, user]);
 
   if (loading || !user) {
     return (
@@ -155,9 +206,12 @@ function HomePage() {
       <LocationTracker />
 
       <div className="flex-1 relative">
-        <FamilyMap members={members.filter((m) => m.updated_at !== "")} />
+        <FamilyMap
+          members={members.filter((m) => m.updated_at !== "")}
+          onWakeMember={(member) => void sendWake(member.user_id, member.display_name)}
+        />
         {showList && (
-          <div className="absolute top-3 left-3 right-3 bg-card/95 backdrop-blur border rounded-xl shadow-lg max-h-[60vh] overflow-y-auto">
+          <div className="absolute top-3 left-3 right-3 z-[1000] bg-card/95 backdrop-blur border rounded-xl shadow-lg max-h-[60vh] overflow-y-auto">
             {members.length === 0 && (
               <div className="p-4 text-sm text-muted-foreground text-center">
                 Κανείς δεν μοιράζεται τοποθεσία ακόμα.
