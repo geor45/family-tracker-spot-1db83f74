@@ -37,22 +37,19 @@ function HomePage() {
     const load = async () => {
       const { data: locs } = await supabase.from("latest_locations").select("*");
       const { data: profs } = await supabase.from("profiles").select("*");
-      if (!locs || !profs) return;
-      const merged: MemberLocation[] = locs
-        .map((l) => {
-          const p = profs.find((pr) => pr.id === l.user_id);
-          if (!p) return null;
-          return {
-            user_id: l.user_id,
-            display_name: p.display_name,
-            color: p.color,
-            latitude: l.latitude,
-            longitude: l.longitude,
-            accuracy: l.accuracy,
-            updated_at: l.updated_at,
-          } satisfies MemberLocation;
-        })
-        .filter((x): x is MemberLocation => x !== null);
+      if (!profs) return;
+      const merged: MemberLocation[] = profs.map((p) => {
+        const l = locs?.find((lo) => lo.user_id === p.id);
+        return {
+          user_id: p.id,
+          display_name: p.display_name,
+          color: p.color,
+          latitude: l?.latitude ?? 0,
+          longitude: l?.longitude ?? 0,
+          accuracy: l?.accuracy ?? null,
+          updated_at: l?.updated_at ?? "",
+        } satisfies MemberLocation;
+      });
       setMembers(merged);
     };
     void load();
@@ -158,7 +155,7 @@ function HomePage() {
       <LocationTracker />
 
       <div className="flex-1 relative">
-        <FamilyMap members={members} />
+        <FamilyMap members={members.filter((m) => m.updated_at !== "")} />
         {showList && (
           <div className="absolute top-3 left-3 right-3 bg-card/95 backdrop-blur border rounded-xl shadow-lg max-h-[60vh] overflow-y-auto">
             {members.length === 0 && (
@@ -180,10 +177,12 @@ function HomePage() {
                 <div className="min-w-0 flex-1">
                   <div className="font-medium text-sm truncate">{m.display_name}</div>
                   <div className="text-xs text-muted-foreground">
-                    {formatDistanceToNow(new Date(m.updated_at), {
-                      addSuffix: true,
-                      locale: el,
-                    })}
+                    {m.updated_at
+                      ? formatDistanceToNow(new Date(m.updated_at), {
+                          addSuffix: true,
+                          locale: el,
+                        })
+                      : "Χωρίς τοποθεσία ακόμα"}
                   </div>
                 </div>
                 <Button
