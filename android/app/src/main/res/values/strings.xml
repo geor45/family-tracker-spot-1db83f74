@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Family GPS</string>
+    <string name="title_activity_main">Family GPS</string>
+    <string name="package_name">com.family.gps</string>
+    <string name="custom_url_scheme">com.family.gps</string>
+</resources>
