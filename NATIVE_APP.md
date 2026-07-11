@@ -104,3 +104,41 @@ bunx cap open ios
 ## Μελλοντικές αλλαγές
 
 Επειδή το app φορτώνει από το δημοσιευμένο URL, αρκεί να πατάς **Publish** στο Lovable — δεν χρειάζεται να ξαναχτίζεις APK/IPA.
+
+---
+
+## 6. Push Notifications (ειδοποιήσεις με κλειστή εφαρμογή) — Android
+
+Για να φτάνει το «Ξύπνα βλάκα» ακόμα κι όταν η εφαρμογή είναι κλειστή, χρειάζεται **Firebase Cloud Messaging (FCM)**.
+
+### 6.1 Firebase project
+
+1. Πήγαινε στο [console.firebase.google.com](https://console.firebase.google.com) και φτιάξε ένα project (π.χ. `family-gps`).
+2. **Add app → Android**. Package name: `com.family.gps`. Κατέβασε το `google-services.json`.
+3. Βάλε το αρχείο στο: `android/app/google-services.json`.
+
+### 6.2 Gradle setup
+
+Στο `android/build.gradle`, στο `dependencies` του `buildscript`, πρόσθεσε:
+
+```gradle
+classpath 'com.google.gms:google-services:4.4.2'
+```
+
+Στο τέλος του `android/app/build.gradle`:
+
+```gradle
+apply plugin: 'com.google.gms.google-services'
+```
+
+Τρέξε:
+```bash
+bunx cap sync android
+```
+
+### 6.3 Service Account key (για αποστολή push από τον server)
+
+Στο Firebase console → **Project Settings → Service accounts → Generate new private key**. Κατεβαίνει ένα `.json` αρχείο.
+
+Άνοιξε το αρχείο, αντίγραψε **ολόκληρο το περιεχόμενό του** (ως JSON string), και θα σου ζητηθεί να το αποθηκεύσεις στο Lovable ως secret `FCM_SERVICE_ACCOUNT_JSON`.
+

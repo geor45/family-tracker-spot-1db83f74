@@ -9,6 +9,7 @@ import { LogOut, History, Users, Bell } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { el } from "date-fns/locale";
 import { playWakeSound, primeWakeSound } from "@/lib/wake-sound";
+import { registerPushNotifications } from "@/lib/push-setup";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/")({
@@ -42,6 +43,11 @@ function HomePage() {
       window.removeEventListener("keydown", enableSound);
     };
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    void registerPushNotifications(user.id);
+  }, [user]);
 
   useEffect(() => {
     if (!user) return;
@@ -164,6 +170,32 @@ function HomePage() {
     } else {
       toast.success(`Στάλθηκε ξύπνημα στον/στην ${name} 📣`);
       if (recipientId === user.id && data) void handleIncomingWake(data);
+
+      // Fire-and-forget push notification (works even if recipient app is closed)
+      try {
+        const { data: sess } = await supabase.auth.getSession();
+        const token = sess.session?.access_token;
+        if (token) {
+          const senderName =
+            user.user_metadata?.display_name ??
+            user.email?.split("@")[0] ??
+            "Κάποιος";
+          void fetch("/api/public/send-wake-push", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              recipient_id: recipientId,
+              sender_name: senderName,
+              message: "Ξύπνα βλάκα!",
+            }),
+          });
+        }
+      } catch {
+        /* ignore — realtime + polling still deliver in-app */
+      }
     }
   }, [handleIncomingWake, user]);
 
