@@ -46,6 +46,11 @@ function HomePage() {
 
   useEffect(() => {
     if (!user) return;
+    void registerPushNotifications(user.id);
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
 
     const load = async () => {
       await supabase.from("profiles").upsert({
