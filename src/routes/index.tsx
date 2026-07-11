@@ -9,6 +9,7 @@ import { LogOut, History, Users, Bell } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { el } from "date-fns/locale";
 import { playWakeSound, primeWakeSound } from "@/lib/wake-sound";
+import { registerPushNotifications } from "@/lib/push-setup";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/")({
