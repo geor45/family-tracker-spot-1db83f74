@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import familyPhoto from "@/assets/KERMEGPS.png";
+import familyPhoto from "@/assets/KERMEGPS.png.asset.json";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
