@@ -61,7 +61,7 @@ function AuthPage() {
     <div className="min-h-dvh overflow-y-auto bg-gradient-to-br from-background to-muted px-4 py-6">
       <div className="mx-auto w-full max-w-md space-y-3">
         <img
-          src={familyPhoto}
+          src={familyPhoto.url}
           alt="Οικογενειακή φωτογραφία"
           className="aspect-[4/3] w-full min-h-[360px] rounded-2xl border object-cover object-center shadow-lg"
         />
