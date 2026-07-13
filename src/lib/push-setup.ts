@@ -1,15 +1,18 @@
-import { Capacitor } from "@capacitor/core";
-import { PushNotifications } from "@capacitor/push-notifications";
 import { supabase } from "@/integrations/supabase/client";
 
 let registered = false;
 
 export async function registerPushNotifications(userId: string) {
   if (registered) return;
-  if (!Capacitor.isNativePlatform()) return;
-  registered = true;
+  if (typeof window === "undefined") return;
 
   try {
+    const { Capacitor } = await import("@capacitor/core");
+    if (!Capacitor.isNativePlatform()) return;
+
+    const { PushNotifications } = await import("@capacitor/push-notifications");
+    registered = true;
+
     let perm = await PushNotifications.checkPermissions();
     if (perm.receive !== "granted") {
       perm = await PushNotifications.requestPermissions();

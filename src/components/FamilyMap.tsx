@@ -69,13 +69,18 @@ export function FamilyMap({ members, onWakeMember }: FamilyMapProps) {
     const map = L.map(containerRef.current, {
       center: [37.9838, 23.7275], // default Athens; will re-fit when data arrives
       zoom: 12,
-      maxZoom: 22,
+      maxZoom: 24,
+      minZoom: 3,
       zoomControl: true,
+      scrollWheelZoom: true,
+      doubleClickZoom: true,
+      touchZoom: true,
+      boxZoom: true,
     });
     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "© OpenStreetMap contributors",
       maxNativeZoom: 19,
-      maxZoom: 22,
+      maxZoom: 24,
       detectRetina: true,
     }).addTo(map);
     layerRef.current = L.layerGroup().addTo(map);
