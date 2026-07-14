@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="el">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <title>Family GPS</title>
+    <style>
+      html, body { margin: 0; height: 100%; background: #0b1220; color: #fff; font-family: -apple-system, system-ui, sans-serif; }
+      .wrap { display: flex; align-items: center; justify-content: center; height: 100%; text-align: center; padding: 24px; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div>
+        <h1>Family GPS</h1>
+        <p>Φόρτωση…</p>
+      </div>
+    </div>
+    <script>
+      // Fallback αν για κάποιο λόγο το Capacitor δεν χρησιμοποιήσει το server.url
+      // από το capacitor.config.ts (π.χ. σε debug χωρίς sync).
+      setTimeout(function () {
+        if (location.protocol === 'file:' || location.hostname === 'localhost') {
+          location.replace('https://family-tracker-spot.lovable.app');
+        }
+      }, 800);
+    </script>
+  </body>
+</html>
