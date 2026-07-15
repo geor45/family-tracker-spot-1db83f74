@@ -36,7 +36,6 @@ export async function registerPushNotifications(userId: string) {
           description: "Ειδοποιήσεις όταν κάποιος από την οικογένεια σε ψάχνει.",
           importance: 5,
           visibility: 1,
-          sound: "default",
           vibration: true,
         });
       } catch (e) {
