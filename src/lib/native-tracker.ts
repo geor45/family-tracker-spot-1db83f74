@@ -1,4 +1,3 @@
-import { registerPlugin, Capacitor } from "@capacitor/core";
 import { supabase } from "@/integrations/supabase/client";
 
 // Types for @capacitor-community/background-geolocation
@@ -24,18 +23,28 @@ interface BackgroundGeolocationPlugin {
   openSettings(): Promise<void>;
 }
 
-const BackgroundGeolocation =
-  registerPlugin<BackgroundGeolocationPlugin>("BackgroundGeolocation");
-
-export const isNative = () => Capacitor.isNativePlatform();
-
 let watcherId: string | null = null;
 let lastLat = 0;
 let lastLng = 0;
 let lastAt = 0;
+let backgroundGeolocation: BackgroundGeolocationPlugin | null = null;
+
+async function getBackgroundGeolocation() {
+  if (typeof window === "undefined") return null;
+
+  const { Capacitor, registerPlugin } = await import("@capacitor/core");
+  if (!Capacitor.isNativePlatform()) return null;
+
+  backgroundGeolocation ??=
+    registerPlugin<BackgroundGeolocationPlugin>("BackgroundGeolocation");
+  return backgroundGeolocation;
+}
 
 export async function startNativeTracking(userId: string) {
-  if (!isNative() || watcherId) return;
+  if (watcherId) return true;
+
+  const BackgroundGeolocation = await getBackgroundGeolocation();
+  if (!BackgroundGeolocation) return false;
 
   watcherId = await BackgroundGeolocation.addWatcher(
     {
@@ -80,10 +89,12 @@ export async function startNativeTracking(userId: string) {
       });
     },
   );
+  return true;
 }
 
 export async function stopNativeTracking() {
-  if (watcherId) {
+  const BackgroundGeolocation = await getBackgroundGeolocation();
+  if (watcherId && BackgroundGeolocation) {
     await BackgroundGeolocation.removeWatcher({ id: watcherId });
     watcherId = null;
   }
