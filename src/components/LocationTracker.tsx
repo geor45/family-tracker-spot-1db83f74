@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
-import { isNative, startNativeTracking, stopNativeTracking } from "@/lib/native-tracker";
+import { startNativeTracking, stopNativeTracking } from "@/lib/native-tracker";
 
 /**
  * Native (Capacitor) → background geolocation plugin (works με κλειστή οθόνη).
@@ -14,22 +14,8 @@ export function LocationTracker() {
 
   useEffect(() => {
     if (!user) return;
-
-    if (isNative()) {
-      startNativeTracking(user.id).catch((e) => {
-        setStatus("error");
-        setLastError(e instanceof Error ? e.message : String(e));
-      });
-      return () => {
-        void stopNativeTracking();
-      };
-    }
-
-    if (!("geolocation" in navigator)) {
-      setStatus("error");
-      setLastError("Το browser δεν υποστηρίζει GPS.");
-      return;
-    }
+    let cancelled = false;
+    let webWatchId: number | null = null;
 
     let lastLat = 0;
     let lastLng = 0;
@@ -59,20 +45,46 @@ export function LocationTracker() {
       });
     };
 
-    const id = navigator.geolocation.watchPosition(
-      (pos) => {
-        setStatus("granted");
-        setLastError(null);
-        void write(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
-      },
-      (err) => {
-        setStatus(err.code === err.PERMISSION_DENIED ? "denied" : "error");
-        setLastError(err.message);
-      },
-      { enableHighAccuracy: true, maximumAge: 10_000, timeout: 30_000 },
-    );
+    const startWebTracking = () => {
+      if (cancelled || webWatchId !== null) return;
+      if (!("geolocation" in navigator)) {
+        setStatus("error");
+        setLastError("Το browser δεν υποστηρίζει GPS.");
+        return;
+      }
 
-    return () => navigator.geolocation.clearWatch(id);
+      webWatchId = navigator.geolocation.watchPosition(
+        (pos) => {
+          setStatus("granted");
+          setLastError(null);
+          void write(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
+        },
+        (err) => {
+          setStatus(err.code === err.PERMISSION_DENIED ? "denied" : "error");
+          setLastError(err.message);
+        },
+        { enableHighAccuracy: true, maximumAge: 10_000, timeout: 30_000 },
+      );
+    };
+
+    void startNativeTracking(user.id)
+      .then((startedNative) => {
+        if (cancelled) {
+          if (startedNative) void stopNativeTracking();
+          return;
+        }
+        if (!startedNative) startWebTracking();
+      })
+      .catch((e) => {
+        console.warn("Native GPS failed; falling back to browser GPS", e);
+        startWebTracking();
+      });
+
+    return () => {
+      cancelled = true;
+      if (webWatchId !== null) navigator.geolocation.clearWatch(webWatchId);
+      void stopNativeTracking();
+    };
   }, [user]);
 
   if (status === "denied") {
