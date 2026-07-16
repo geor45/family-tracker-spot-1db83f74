@@ -33,7 +33,6 @@ export async function registerPushNotifications(userId: string) {
     }
 
     const { PushNotifications } = await import("@capacitor/push-notifications");
-    const platform = Capacitor.getPlatform();
 
     let perm = await PushNotifications.checkPermissions();
     if (perm.receive !== "granted") {
@@ -42,21 +41,6 @@ export async function registerPushNotifications(userId: string) {
     if (perm.receive !== "granted") {
       safeWarn("Push permission denied");
       return;
-    }
-
-    if (platform === "android") {
-      try {
-        await PushNotifications.createChannel({
-          id: "wake",
-          name: "Ξύπνα βλάκα",
-          description: "Ειδοποιήσεις όταν κάποιος από την οικογένεια σε ψάχνει.",
-          importance: 5,
-          visibility: 1,
-          vibration: true,
-        });
-      } catch (e) {
-        safeWarn("Push notification channel setup failed", e);
-      }
     }
 
     await PushNotifications.addListener("registration", async (token) => {
