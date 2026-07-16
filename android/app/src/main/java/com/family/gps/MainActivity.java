@@ -12,6 +12,7 @@ import com.google.firebase.FirebaseApp;
 public class MainActivity extends BridgeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        registerPlugin(SafePushPlugin.class);
         initializeFirebaseSafely();
         createWakeNotificationChannel();
         super.onCreate(savedInstanceState);
