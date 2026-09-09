@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as HistoryRouteImport } from './routes/history'
+import { Route as FamilyRouteImport } from './routes/family'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiPublicSendWakePushRouteImport } from './routes/api/public/send-wake-push'
@@ -17,6 +18,11 @@ import { Route as ApiPublicSendWakePushRouteImport } from './routes/api/public/s
 const HistoryRoute = HistoryRouteImport.update({
   id: '/history',
   path: '/history',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FamilyRoute = FamilyRouteImport.update({
+  id: '/family',
+  path: '/family',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -38,12 +44,14 @@ const ApiPublicSendWakePushRoute = ApiPublicSendWakePushRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/family': typeof FamilyRoute
   '/history': typeof HistoryRoute
   '/api/public/send-wake-push': typeof ApiPublicSendWakePushRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/family': typeof FamilyRoute
   '/history': typeof HistoryRoute
   '/api/public/send-wake-push': typeof ApiPublicSendWakePushRoute
 }
@@ -51,20 +59,29 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/family': typeof FamilyRoute
   '/history': typeof HistoryRoute
   '/api/public/send-wake-push': typeof ApiPublicSendWakePushRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/history' | '/api/public/send-wake-push'
+  fullPaths:
+    '/' | '/auth' | '/family' | '/history' | '/api/public/send-wake-push'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/history' | '/api/public/send-wake-push'
-  id: '__root__' | '/' | '/auth' | '/history' | '/api/public/send-wake-push'
+  to: '/' | '/auth' | '/family' | '/history' | '/api/public/send-wake-push'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/family'
+    | '/history'
+    | '/api/public/send-wake-push'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
+  FamilyRoute: typeof FamilyRoute
   HistoryRoute: typeof HistoryRoute
   ApiPublicSendWakePushRoute: typeof ApiPublicSendWakePushRoute
 }
@@ -76,6 +93,13 @@ declare module '@tanstack/react-router' {
       path: '/history'
       fullPath: '/history'
       preLoaderRoute: typeof HistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/family': {
+      id: '/family'
+      path: '/family'
+      fullPath: '/family'
+      preLoaderRoute: typeof FamilyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -105,9 +129,20 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
+  FamilyRoute: FamilyRoute,
   HistoryRoute: HistoryRoute,
   ApiPublicSendWakePushRoute: ApiPublicSendWakePushRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

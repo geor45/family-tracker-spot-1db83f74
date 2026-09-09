@@ -26,6 +26,7 @@ function HomePage() {
   const nav = useNavigate();
   const { user, loading } = useAuth();
   const [members, setMembers] = useState<MemberLocation[]>([]);
+  const [checkingFamily, setCheckingFamily] = useState(true);
   const [showList, setShowList] = useState(false);
   const processedWakeIdsRef = useRef<Set<string>>(new Set());
   const listenFromRef = useRef(new Date().toISOString());
@@ -33,6 +34,34 @@ function HomePage() {
   useEffect(() => {
     if (!loading && !user) nav({ to: "/auth" });
   }, [user, loading, nav]);
+
+  useEffect(() => {
+  if (loading) return;
+
+  if (!user) {
+    setCheckingFamily(false);
+    return;
+  }
+
+  const checkFamily = async () => {
+    const { data, error } = await supabase.rpc("get_my_family_id");
+
+    if (error) {
+      console.error("Family check error:", error);
+      setCheckingFamily(false);
+      return;
+    }
+
+    if (!data) {
+      nav({ to: "/family" });
+      return;
+    }
+
+    setCheckingFamily(false);
+  };
+
+  void checkFamily();
+}, [loading, user, nav]);
 
   useEffect(() => {
     const enableSound = () => primeWakeSound();
@@ -199,7 +228,7 @@ function HomePage() {
     }
   }, [handleIncomingWake, user]);
 
-  if (loading || !user) {
+  if (loading || checkingFamily || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center text-muted-foreground text-sm">
         Φόρτωση...
@@ -217,8 +246,12 @@ function HomePage() {
           </p>
         </div>
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" onClick={() => setShowList((v) => !v)}>
-            <Users className="h-5 w-5" />
+          <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => nav({ to: "/family" })}
+             >
+             <Users className="h-5 w-5" />
           </Button>
           <Button variant="ghost" size="icon" asChild>
             <Link to="/history">

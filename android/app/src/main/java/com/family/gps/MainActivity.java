@@ -9,6 +9,9 @@ import android.os.Bundle;
 import com.getcapacitor.BridgeActivity;
 import com.google.firebase.FirebaseApp;
 
+import android.media.AudioAttributes;
+import android.media.RingtoneManager;
+
 public class MainActivity extends BridgeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +39,13 @@ public class MainActivity extends BridgeActivity {
         );
         channel.setDescription("Ειδοποιήσεις όταν κάποιος από την οικογένεια σε ψάχνει.");
         channel.enableVibration(true);
+        channel.setSound(
+        RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION),
+        new AudioAttributes.Builder()
+        .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+        .build()
+);
 
         NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (manager != null) {

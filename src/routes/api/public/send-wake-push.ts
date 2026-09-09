@@ -119,6 +119,22 @@ export const Route = createFileRoute("/api/public/send-wake-push")({
             return new Response("Unauthorized", { status: 401 });
           }
 
+          const { data: sameFamily, error: familyErr } = await userClient.rpc(
+  "is_same_family",
+  {
+    p_user_id: body.recipient_id,
+  },
+);
+
+if (familyErr) {
+  console.error("Family verification error:", familyErr);
+  return new Response("Family verification failed", { status: 500 });
+}
+
+if (!sameFamily) {
+  return new Response("Forbidden", { status: 403 });
+}
+
           const { supabaseAdmin } = await import(
             "@/integrations/supabase/client.server"
           );
