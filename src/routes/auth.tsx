@@ -206,6 +206,19 @@ function AuthPage() {
               autoComplete="email"
             />
           </div>
+                {mode === "signin" && !resetMode && (
+        <div className="space-y-1.5">
+          <Label htmlFor="password">Κωδικός</Label>
+          <Input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            autoComplete="current-password"
+          />
+        </div>
+      )}
 
           {resetMode && (
         <div className="space-y-1.5">
