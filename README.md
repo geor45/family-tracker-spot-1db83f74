@@ -160,80 +160,122 @@ Family GPS follows a modern client-server architecture that connects the fronten
         │  PostgreSQL  │
         │   Database   │
         └──────────────┘
-
----
+```
 
 The main application components communicate through Supabase services, while MapTiler provides the map infrastructure and Firebase Cloud Messaging handles mobile push notifications.
 
 ---
 
-
 ## 📍 Location Tracking
+
 The application supports native background location tracking on mobile devices.
+
 Location information is stored using two main data structures:
-- latest_locations — latest known location of each user
-- location_history — historical location data
+
+- `latest_locations` — latest known location of each user
+- `location_history` — historical location data
+
 The application also uses realtime updates so family members can see location changes without manually refreshing the map.
+
 On supported mobile devices, the application can continue collecting location data while running in the background.
 
+---
+
 ## 👨‍👩‍👧‍👦 Family System
+
 Each user belongs to a private family.
+
 A family owner can create a family and share the generated invite code with other members.
+
 The family structure can be represented as:
+
+```text
 Family
 ├── Owner
 ├── Member
 ├── Member
 └── Member
+```
+
 Family membership is enforced at the database level using Supabase Row Level Security.
+
 Users can only access location and family information belonging to their own family.
 
+---
+
 ## 🗺️ Maps
+
 Family GPS uses Leaflet together with MapTiler for the interactive map experience.
+
 The map provides:
+
 - Live family member markers
 - Location visualization
 - Automatic positioning
 - Zoom and navigation
 - Historical routes
 - Responsive map interaction
+
 Map data is based on OpenStreetMap data and rendered through MapTiler.
 
+---
+
 ## 🕐 Location History
+
 The Location History section allows users to inspect previous movement.
+
 Users can:
+
 1. Select a family member
 2. Select a time range
 3. Load historical location data
 4. View the movement route on the map
 5. Zoom and navigate through the route
+
 This provides a clear visual representation of previous locations and movement.
 
+---
+
 ## 🔔 Push Notifications
+
 Family GPS includes a custom push notification system for communication between family members.
+
 The notification system uses:
+
 - Firebase Cloud Messaging
 - Native Android notification channels
 - Notification sound
 - Vibration
 - Server-side authorization
 - Family membership validation
+
 The application validates that the sender and recipient belong to the same family before sending a notification.
 
+---
+
 ## 🔐 Authentication
+
 Authentication is handled through Supabase Auth.
+
 The application supports:
+
 - Account registration
 - Email/password login
 - Logout
 - Password recovery
 - Password reset
 - Protected application routes
+
 Authentication state is also used to determine access to family-related data.
 
+---
+
 ## 🛡️ Security
+
 Security is implemented at both the database and server levels.
+
 The application uses:
+
 - Supabase Authentication
 - PostgreSQL Row Level Security
 - Family-based access control
@@ -241,28 +283,46 @@ The application uses:
 - Server-side authorization
 - Protected push notification endpoints
 - Environment variables for sensitive configuration
+
 Sensitive credentials and API keys are not stored in the GitHub repository.
 
+---
+
 ## 📱 Mobile Application
+
 The project is prepared for native mobile deployment through Capacitor.
+
 The mobile architecture provides access to native capabilities such as:
+
 - Background location tracking
 - Push notifications
 - Android notification channels
 - Native device functionality
+
 The application is structured to support both Android and iOS environments.
 
+---
+
 ## 💻 Responsive Web Application
+
 Family GPS is designed to work across different screen sizes.
+
 The interface supports:
+
 - Desktop computers
 - Tablets
 - Mobile devices
+
 The map and application interface adapt to smaller screens while maintaining the core functionality of the application.
 
+---
+
 ## 🗄️ Database
+
 The application uses PostgreSQL through Supabase.
+
 The database includes structures for:
+
 - User profiles
 - Latest locations
 - Location history
@@ -270,46 +330,94 @@ The database includes structures for:
 - Wake signals
 - Families
 - Family members
+
 Family-related access is protected through database-level Row Level Security policies.
 
+---
+
 ## 🔄 Realtime Communication
+
 Family GPS uses Supabase Realtime to keep location information synchronized.
+
 When a family member's latest location changes, other authorized family members can receive the update without manually refreshing the application.
+
 This allows the map to behave as a live family location dashboard.
-⚙️ Local Development
-1. Clone the repository
+
+---
+
+## ⚙️ Local Development
+
+### 1. Clone the repository
+
+```bash
 git clone https://github.com/geor45/family-tracker-spot-1db83f74.git
 cd family-tracker-spot-1db83f74
-2. Install dependencies
+```
+
+### 2. Install dependencies
+
+```bash
 npm install
-3. Configure environment variables
-Create a .env file in the project root.
+```
+
+### 3. Configure environment variables
+
+Create a `.env` file in the project root.
+
 Required environment variables include:
+
+```env
 VITE_SUPABASE_URL=
 VITE_SUPABASE_PUBLISHABLE_KEY=
 VITE_MAPTILER_API_KEY=
 SUPABASE_URL=
 SUPABASE_SERVICE_ROLE_KEY=
-Never commit .env files, API keys or server secrets to GitHub.
+```
 
-4. Start the development server
+> Never commit `.env` files, API keys or server secrets to GitHub.
+
+### 4. Start the development server
+
+```bash
 npm run dev
+```
+
 The application will then be available through the local development server.
+
+---
+
 ## 📦 Production Build
+
 To create a production build:
+
+```bash
 npm run build
+```
+
 The project is configured to generate the production application through the Vite/TanStack build process.
 
+---
+
 ## 🌐 Deployment
+
 The web application is deployed through Vercel.
+
 The source code is maintained through GitHub, while production environment variables are configured separately in the deployment environment.
+
 The production setup includes:
+
 - Vercel
 - Supabase
 - MapTiler
 - Firebase Cloud Messaging
+
 Sensitive server-side credentials remain outside the public repository.
-📂 Project Structure
+
+---
+
+## 📂 Project Structure
+
+```text
 src/
 ├── components/
 ├── routes/
@@ -327,10 +435,16 @@ android/
 
 public/
 └── favicon.ico
+```
+
 The project is organized around reusable React components, route-based application pages, Supabase services and native mobile integrations.
 
+---
+
 ## 🎯 Project Goals
+
 Family GPS was developed with a focus on:
+
 - Real-time family location sharing
 - Privacy between family groups
 - Secure data access
@@ -342,10 +456,18 @@ Family GPS was developed with a focus on:
 - Modern web technologies
 - Cross-platform development
 
+---
+
 ## 👨‍💻 Developer
-Γεώργιος Βασιλείου
-Full-Stack Web & Mobile Developer
+
+### Γεώργιος Βασιλείου
+
+**Full-Stack Web & Mobile Developer**
+
 Building modern web applications, mobile applications and custom digital solutions.
 
+---
+
 ## 📄 License
+
 This project was developed for demonstration and portfolio purposes.
