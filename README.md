@@ -161,6 +161,8 @@ Family GPS follows a modern client-server architecture that connects the fronten
         │   Database   │
         └──────────────┘
 
+---
+
 The main application components communicate through Supabase services, while MapTiler provides the map infrastructure and Firebase Cloud Messaging handles mobile push notifications.
 
 ---
