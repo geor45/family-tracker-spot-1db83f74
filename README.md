@@ -164,7 +164,7 @@ Family GPS follows a modern client-server architecture that connects the fronten
 The main application components communicate through Supabase services, while MapTiler provides the map infrastructure and Firebase Cloud Messaging handles mobile push notifications.
 
 
-###📍 Location Tracking
+#📍 Location Tracking
 The application supports native background location tracking on mobile devices.
 Location information is stored using two main data structures:
 - latest_locations — latest known location of each user
@@ -172,7 +172,7 @@ Location information is stored using two main data structures:
 The application also uses realtime updates so family members can see location changes without manually refreshing the map.
 On supported mobile devices, the application can continue collecting location data while running in the background.
 
-###👨‍👩‍👧‍👦 Family System
+#👨‍👩‍👧‍👦 Family System
 Each user belongs to a private family.
 A family owner can create a family and share the generated invite code with other members.
 The family structure can be represented as:
@@ -184,7 +184,7 @@ Family
 Family membership is enforced at the database level using Supabase Row Level Security.
 Users can only access location and family information belonging to their own family.
 
-###🗺️ Maps
+#🗺️ Maps
 Family GPS uses Leaflet together with MapTiler for the interactive map experience.
 The map provides:
 - Live family member markers
@@ -195,7 +195,7 @@ The map provides:
 - Responsive map interaction
 Map data is based on OpenStreetMap data and rendered through MapTiler.
 
-###🕐 Location History
+#🕐 Location History
 The Location History section allows users to inspect previous movement.
 Users can:
 1. Select a family member
@@ -205,7 +205,7 @@ Users can:
 5. Zoom and navigate through the route
 This provides a clear visual representation of previous locations and movement.
 
-###🔔 Push Notifications
+#🔔 Push Notifications
 Family GPS includes a custom push notification system for communication between family members.
 The notification system uses:
 - Firebase Cloud Messaging
@@ -216,7 +216,7 @@ The notification system uses:
 - Family membership validation
 The application validates that the sender and recipient belong to the same family before sending a notification.
 
-###🔐 Authentication
+#🔐 Authentication
 Authentication is handled through Supabase Auth.
 The application supports:
 - Account registration
@@ -227,7 +227,7 @@ The application supports:
 - Protected application routes
 Authentication state is also used to determine access to family-related data.
 
-###🛡️ Security
+#🛡️ Security
 Security is implemented at both the database and server levels.
 The application uses:
 - Supabase Authentication
@@ -239,7 +239,7 @@ The application uses:
 - Environment variables for sensitive configuration
 Sensitive credentials and API keys are not stored in the GitHub repository.
 
-###📱 Mobile Application
+#📱 Mobile Application
 The project is prepared for native mobile deployment through Capacitor.
 The mobile architecture provides access to native capabilities such as:
 - Background location tracking
@@ -248,7 +248,7 @@ The mobile architecture provides access to native capabilities such as:
 - Native device functionality
 The application is structured to support both Android and iOS environments.
 
-###💻 Responsive Web Application
+#💻 Responsive Web Application
 Family GPS is designed to work across different screen sizes.
 The interface supports:
 - Desktop computers
@@ -256,7 +256,7 @@ The interface supports:
 - Mobile devices
 The map and application interface adapt to smaller screens while maintaining the core functionality of the application.
 
-###🗄️ Database
+#🗄️ Database
 The application uses PostgreSQL through Supabase.
 The database includes structures for:
 - User profiles
@@ -268,7 +268,7 @@ The database includes structures for:
 - Family members
 Family-related access is protected through database-level Row Level Security policies.
 
-###🔄 Realtime Communication
+#🔄 Realtime Communication
 Family GPS uses Supabase Realtime to keep location information synchronized.
 When a family member's latest location changes, other authorized family members can receive the update without manually refreshing the application.
 This allows the map to behave as a live family location dashboard.
@@ -296,7 +296,7 @@ To create a production build:
 npm run build
 The project is configured to generate the production application through the Vite/TanStack build process.
 
-###🌐 Deployment
+#🌐 Deployment
 The web application is deployed through Vercel.
 The source code is maintained through GitHub, while production environment variables are configured separately in the deployment environment.
 The production setup includes:
@@ -325,7 +325,7 @@ public/
 └── favicon.ico
 The project is organized around reusable React components, route-based application pages, Supabase services and native mobile integrations.
 
-###🎯 Project Goals
+#🎯 Project Goals
 Family GPS was developed with a focus on:
 - Real-time family location sharing
 - Privacy between family groups
@@ -338,10 +338,10 @@ Family GPS was developed with a focus on:
 - Modern web technologies
 - Cross-platform development
 
-###👨‍💻 Developer
+#👨‍💻 Developer
 Γεώργιος Βασιλείου
 Full-Stack Web & Mobile Developer
 Building modern web applications, mobile applications and custom digital solutions.
 
-###📄 License
+#📄 License
 This project was developed for demonstration and portfolio purposes.
