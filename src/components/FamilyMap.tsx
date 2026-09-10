@@ -77,12 +77,16 @@ export function FamilyMap({ members, onWakeMember }: FamilyMapProps) {
       touchZoom: true,
       boxZoom: true,
     });
-    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "© OpenStreetMap contributors",
-      maxNativeZoom: 19,
-      maxZoom: 19,
-      detectRetina: false,
-    }).addTo(map);
+    L.tileLayer(
+  `https://api.maptiler.com/maps/streets-v4/{z}/{x}/{y}.png?key=${import.meta.env.VITE_MAPTILER_API_KEY}`,
+  {
+    attribution:
+      '&copy; <a href="https://www.maptiler.com/copyright/" target="_blank">MapTiler</a> &copy; OpenStreetMap contributors',
+    maxNativeZoom: 20,
+    maxZoom: 20,
+    detectRetina: false,
+  },
+).addTo(map);
     layerRef.current = L.layerGroup().addTo(map);
     mapRef.current = map;
 

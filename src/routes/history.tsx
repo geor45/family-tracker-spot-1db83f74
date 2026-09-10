@@ -74,22 +74,27 @@ function HistoryPage() {
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     const map = L.map(containerRef.current, {
-      center: [37.9838, 23.7275],
-      zoom: 12,
-      maxZoom: 24,
-      minZoom: 3,
-      zoomControl: true,
-      scrollWheelZoom: true,
-      doubleClickZoom: true,
-      touchZoom: true,
-      boxZoom: true,
-    });
-    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "© OpenStreetMap contributors",
-      maxNativeZoom: 19,
-      maxZoom: 24,
-      detectRetina: true,
-    }).addTo(map);
+  center: [37.9838, 23.7275],
+  zoom: 12,
+  maxZoom: 19,
+  minZoom: 3,
+  zoomControl: true,
+  scrollWheelZoom: true,
+  doubleClickZoom: true,
+  touchZoom: true,
+  boxZoom: true,
+});
+
+L.tileLayer(
+  `https://api.maptiler.com/maps/streets-v4/{z}/{x}/{y}.png?key=${import.meta.env.VITE_MAPTILER_API_KEY}`,
+  {
+    attribution:
+      '&copy; <a href="https://www.maptiler.com/copyright/" target="_blank">MapTiler</a> &copy; OpenStreetMap contributors',
+    maxNativeZoom: 20,
+    maxZoom: 20,
+    detectRetina: false,
+  },
+).addTo(map);
     layerRef.current = L.layerGroup().addTo(map);
     mapRef.current = map;
     return () => {
@@ -150,7 +155,7 @@ function HistoryPage() {
           <SelectTrigger>
             <SelectValue placeholder="Μέλος" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="z-[1000]">
             {profiles.map((p) => (
               <SelectItem key={p.id} value={p.id}>
                 {p.display_name}
@@ -162,7 +167,7 @@ function HistoryPage() {
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="z-[1000]">
             <SelectItem value="1">Τελευταίες 24 ώρες</SelectItem>
             <SelectItem value="7">Τελευταίες 7 ημέρες</SelectItem>
             <SelectItem value="30">Τελευταίες 30 ημέρες</SelectItem>

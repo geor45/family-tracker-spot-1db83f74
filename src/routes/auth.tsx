@@ -24,17 +24,117 @@ function AuthPage() {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
+  const [resetMode, setResetMode] = useState(false);
 
   useEffect(() => {
-    if (!loading && session) nav({ to: "/" });
-  }, [session, loading, nav]);
+  const isReset =
+    new URLSearchParams(window.location.search).get("reset") === "true";
+
+  if (isReset) {
+    setResetMode(true);
+  }
+
+  if (!loading && session && !isReset) {
+    nav({ to: "/" });
+  }
+
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange((event) => {
+    if (event === "PASSWORD_RECOVERY") {
+      setResetMode(true);
+    }
+  });
+
+  return () => {
+    subscription.unsubscribe();
+  };
+}, [session, loading, nav]);
+
+     const handlePasswordReset = async () => {
+    const normalizedEmail = email.trim();
+
+    if (!normalizedEmail) {
+      toast.error("Γράψε πρώτα το email σου.");
+      return;
+    }
+
+    setBusy(true);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(
+        normalizedEmail,
+        {
+          redirectTo: `${window.location.origin}/auth?reset=true`,
+        },
+      );
+
+      if (error) throw error;
+
+      toast.success("Σου στείλαμε email για επαναφορά κωδικού.");
+    } catch (err) {
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : "Δεν ήταν δυνατή η αποστολή του email.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleUpdatePassword = async () => {
+    if (newPassword.length < 6) {
+      toast.error("Ο νέος κωδικός πρέπει να έχει τουλάχιστον 6 χαρακτήρες.");
+      return;
+    }
+
+    setBusy(true);
+
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (error) throw error;
+
+      toast.success("Ο κωδικός σου άλλαξε επιτυχώς!");
+
+      setNewPassword("");
+      setResetMode(false);
+      nav({ to: "/" });
+    } catch (err) {
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : "Δεν ήταν δυνατή η αλλαγή του κωδικού.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
+
     try {
+      if (resetMode) {
+  const isRecoverySession =
+    new URLSearchParams(window.location.search).get("reset") === "true";
+
+  if (isRecoverySession) {
+    await handleUpdatePassword();
+  } else {
+    await handlePasswordReset();
+  }
+
+  return;
+}
+
       if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
           email,
@@ -44,14 +144,22 @@ function AuthPage() {
             data: { display_name: name || email.split("@")[0] },
           },
         });
+
         if (error) throw error;
+
         toast.success("Εγγραφή επιτυχής!");
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
         if (error) throw error;
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Κάτι πήγε στραβά");
+      toast.error(
+        err instanceof Error ? err.message : "Κάτι πήγε στραβά",
+      );
     } finally {
       setBusy(false);
     }
@@ -82,7 +190,7 @@ function AuthPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="π.χ. Μαρία"
-                required
+                required={!resetMode}
               />
             </div>
           )}
@@ -99,33 +207,66 @@ function AuthPage() {
             />
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="password">Κωδικός</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-              autoComplete={mode === "signin" ? "current-password" : "new-password"}
-            />
-          </div>
+          {resetMode && (
+        <div className="space-y-1.5">
+    <Label htmlFor="newPassword">Νέος κωδικός</Label>
+    <Input
+      id="newPassword"
+      type="password"
+      value={newPassword}
+      onChange={(e) => setNewPassword(e.target.value)}
+      required
+      minLength={6}
+      autoComplete="new-password"
+    />
+  </div>
+)}
 
-          <Button type="submit" className="w-full" disabled={busy}>
-            {busy ? "..." : mode === "signin" ? "Σύνδεση" : "Εγγραφή"}
-          </Button>
+          {mode === "signin" && !resetMode && (
+            <button
+             type="button"
+             className="w-full text-sm text-primary underline-offset-4 hover:underline"
+             onClick={() => setResetMode(true)}
+            >
+            Ξέχασες τον κωδικό σου;
+            </button>
+            )}
+
+            <Button type="submit" className="w-full" disabled={busy}>
+              {busy
+              ? "..."
+              : resetMode
+              ? new URLSearchParams(window.location.search).get("reset") === "true"
+              ? "Αλλαγή κωδικού"
+              : "Αποστολή email επαναφοράς"
+              : mode === "signin"
+              ? "Σύνδεση"
+             : "Εγγραφή"}
+            </Button>
         </form>
 
-        <button
-          type="button"
-          onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-          className="w-full text-sm text-muted-foreground hover:text-foreground transition"
-        >
-          {mode === "signin"
-            ? "Δεν έχεις λογαριασμό; Εγγραφή"
-            : "Έχεις λογαριασμό; Σύνδεση"}
-        </button>
+        {resetMode ? (
+  <button
+    type="button"
+    onClick={() => {
+      setResetMode(false);
+      setNewPassword("");
+    }}
+    className="w-full text-sm text-muted-foreground hover:text-foreground transition"
+  >
+    ← Επιστροφή στη σύνδεση
+  </button>
+) : (
+  <button
+    type="button"
+    onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+    className="w-full text-sm text-muted-foreground hover:text-foreground transition"
+  >
+    {mode === "signin"
+      ? "Δεν έχεις λογαριασμό; Εγγραφή"
+      : "Έχεις λογαριασμό; Σύνδεση"}
+  </button>
+)}
       </div>
     </div>
   );
